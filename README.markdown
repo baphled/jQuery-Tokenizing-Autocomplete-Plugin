@@ -17,18 +17,21 @@ How to Use This jQuery Plugin:
 * Make sure you have jquery script included on your page
 * Include jquery.tokeninput.js on your page
 * Include one of the provided stylesheets, or make your own
-* Create a server-side script (php/rails/django anything goes) to generate the search results.
-  The script itself can fetch data from wherever you like, for example a database or a hardcoded list, but it must do the following:
-      * Take exactly one GET parameter named “q” which will contain the query string. E.g. http://www.example.com/myscript?q=query
-      * Output JSON search results in the following format:
 
-        `[{"id":"856","name":"House"},
-         {"id":"1035","name":"Desperate Housewives"},
-         {"id":"1048","name":"Dollhouse"},
-         {"id":"1113","name":"Full House"}
-        ]`
+Create a server-side script (php/rails/django anything goes) to generate the search results.
 
-* Turn text inputs into tokeninputs using jQuery and point them to your results script:
+The script itself can fetch data from wherever you like, for example a database or a hardcoded list, but it must do the following:
+
+  * Take exactly one GET parameter named “q” which will contain the query string. E.g. http://www.example.com/myscript?q=query
+  * Output JSON search results in the following format:
+
+    `[{"id":"856","name":"House"},
+     {"id":"1035","name":"Desperate Housewives"},
+     {"id":"1048","name":"Dollhouse"},
+     {"id":"1113","name":"Full House"}
+    ]`
+
+Turn text inputs into tokeninputs using jQuery and point them to your results script:
 
   `<script type="text/javascript">
   $(document).ready(function () {
@@ -36,4 +39,4 @@ How to Use This jQuery Plugin:
   });
   </script>`
 
-* A list of selected item ids is created inside the original text entry, process them as usual when the form is submitted.
+A list of selected item ids is created inside the original text entry, process them as usual when the form is submitted.
