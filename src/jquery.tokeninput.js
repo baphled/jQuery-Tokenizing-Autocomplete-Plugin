@@ -1,6 +1,6 @@
 /*
  * jQuery Plugin: Tokenizing Autocomplete Text Entry
- * Version 1.1
+ * Version 1.1.1
  *
  * Copyright (c) 2009 James Smith (http://loopj.com)
  * Licensed jointly under the GPL and MIT licenses,
@@ -17,6 +17,8 @@ $.fn.tokenInput = function (url, options) {
         noResultsText: "No results",
         searchingText: "Searching...",
         searchDelay: 300,
+        allowNewValues: false,
+        prePopulateFromInput: false,
         minChars: 1,
         tokenLimit: null,
         jsonContainer: null,
@@ -38,7 +40,7 @@ $.fn.tokenInput = function (url, options) {
         selectedDropdownItem: "token-input-selected-dropdown-item",
         inputToken: "token-input-input-token"
     }, options.classes);
-
+    
     return this.each(function () {
         var list = new $.TokenList(this, settings);
     });
@@ -84,7 +86,7 @@ $.TokenList = function (input, settings) {
     // Create a new text input an attach keyup events
     var input_box = $("<input type=\"text\">")
         .css({
-            outline: "none"
+            outline: "none",
         })
         .focus(function () {
             if (settings.tokenLimit == null || settings.tokenLimit != token_count) {
@@ -92,6 +94,9 @@ $.TokenList = function (input, settings) {
             }
         })
         .blur(function () {
+        	// If the user has been typing, create what they typed as a new value
+        	if(settings.allowNewValues) create_new_token();
+        	
             hide_dropdown();
         })
         .keydown(function (event) {
@@ -160,8 +165,12 @@ $.TokenList = function (input, settings) {
                 case KEY.RETURN:
                 case KEY.COMMA:
                   if(selected_dropdown_item) {
-                    add_token($(selected_dropdown_item));
+                    var li_data = $.data($(selected_dropdown_item).get(0), "tokeninput");
+                    add_token(li_data.id, li_data.name);
                     return false;
+                  } else if(settings.allowNewValues) {
+                	create_new_token();
+                	return false;
                   }
                   break;
 
@@ -194,6 +203,7 @@ $.TokenList = function (input, settings) {
 
     // The list to store the token items in
     var token_list = $("<ul />")
+    	.css('width', hidden_input.width())
         .addClass(settings.classes.tokenList)
         .insertAfter(hidden_input)
         .click(function (event) {
@@ -280,6 +290,16 @@ $.TokenList = function (input, settings) {
                 var id_string = li_data[i].id + ","
                 hidden_input.val(hidden_input.val() + id_string);
             }
+        } else if(settings.prePopulateFromInput) {
+        	var values = hidden_input.val().split(',');
+        	hidden_input.val('');
+        	
+        	$.each(values, function() {
+        		var value = $.trim(this);
+        		if(value.length > 0) add_token(value, value);
+        	});
+        } else {
+        	hidden_input.val('');
         }
     }
 
@@ -330,9 +350,8 @@ $.TokenList = function (input, settings) {
     }
 
     // Add a token to the token list based on user input
-    function add_token (item) {
-        var li_data = $.data(item.get(0), "tokeninput");
-        var this_token = insert_token(li_data.id, li_data.name);
+    function add_token (id, name) {
+        var this_token = insert_token(id, name);
 
         // Clear input box and make sure it keeps focus
         input_box
@@ -343,7 +362,7 @@ $.TokenList = function (input, settings) {
         hide_dropdown();
 
         // Save this token id
-        var id_string = li_data.id + ","
+        var id_string = id + ","
         hidden_input.val(hidden_input.val() + id_string);
         
         token_count++;
@@ -352,6 +371,11 @@ $.TokenList = function (input, settings) {
             input_box.hide();
             hide_dropdown();
         }
+    }
+    
+    function create_new_token () {
+    	var string = input_box.val().toLowerCase();
+    	if(string.length > 0) add_token(string, string);
     }
 
     // Select a token in the token list
@@ -435,9 +459,11 @@ $.TokenList = function (input, settings) {
     }
 
     function show_dropdown_searching () {
-        dropdown
-            .html("<p>"+settings.searchingText+"</p>")
-            .show();
+    	if(settings.searchingText.length > 0) {
+	        dropdown
+	            .html("<p>"+settings.searchingText+"</p>")
+	            .show();
+    	}
     }
 
     function show_dropdown_hint () {
@@ -489,12 +515,16 @@ $.TokenList = function (input, settings) {
             }
 
             dropdown.show();
-            dropdown_ul.slideDown("fast");
+            dropdown_ul.show();
 
         } else {
-            dropdown
-                .html("<p>"+settings.noResultsText+"</p>")
-                .show();
+        	if(settings.noResultsText.length > 0) {
+	            dropdown
+	                .html("<p>"+settings.noResultsText+"</p>")
+	                .show();
+        	} else {
+        		hide_dropdown();
+        	}
         }
     }
 
@@ -555,7 +585,7 @@ $.TokenList = function (input, settings) {
             };
             
             if(settings.method == "POST") {
-			    $.post(settings.url + queryStringDelimiter + settings.queryParam + "=" + query, {}, callback, settings.contentType);
+			    $.post(settings.url, settings.queryParam + "=" + query, callback, settings.contentType);
 		    } else {
 		        $.get(settings.url + queryStringDelimiter + settings.queryParam + "=" + query, {}, callback, settings.contentType);
 		    }
