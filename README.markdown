@@ -1,6 +1,6 @@
-jQuery Plugin: Tokenizing Autocomplete Text Entry
-       By James Smith - http://loopj.com
-=================================================
+# jQuery Plugin: Tokenizing Autocomplete Text Entry
+## By James Smith - http://loopj.com
+
 
 Overview
 --------
