@@ -487,7 +487,9 @@ $.TokenList = function (input, settings) {
                     select_dropdown_item(get_element_from_event(event, "li"));
                 })
                 .click(function (event) {
-                    add_token(get_element_from_event(event, "li"));
+                    var item = get_element_from_event(event, "li");
+                    var the_data = $.data(item.get(0), "tokeninput");
+                    add_token(the_data.id, the_data.name);
                 })
                 .mousedown(function (event) {
                     // Stop user selecting text on tokens
