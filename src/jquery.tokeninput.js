@@ -239,23 +239,19 @@ $.TokenList = function (input, settings) {
         })
         .mouseover(function (event) {
             var li = get_element_from_event(event, "li");
-            if(!li) { return; }
-            
-            if(selected_token !== this) {
+            if(li && selected_token !== this) {
                 li.addClass(settings.classes.highlightedToken);
             }
-            if(!editEnabled && settings.linkedTagPrefix) {
+            if(li) {
                 li.addClass(settings.classes.linkedToken);
             }
         })
         .mouseout(function (event) {
             var li = get_element_from_event(event, "li");
-            if(!li) { return; }
-            
-            if(selected_token !== this) {
+            if(li && selected_token !== this) {
                 li.removeClass(settings.classes.highlightedToken);
             }
-            if(!editEnabled && settings.linkedTagPrefix) {
+            if(li) {
                 li.removeClass(settings.classes.linkedToken);
             }
         })
