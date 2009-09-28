@@ -212,7 +212,7 @@ $.TokenList = function (input, settings) {
 
     // The list to store the token items in
     var token_list = $("<ul />")
-    	.css('width', hidden_input.width())
+    	  .css('width', hidden_input.width())
         .addClass(settings.classes.tokenList)
         .insertAfter(hidden_input)
         .click(function (event) {
@@ -291,7 +291,7 @@ $.TokenList = function (input, settings) {
     function init_list () {
         if(settings.prePopulate) {
             $.each(settings.prePopulate, function(i, item) {
-                create_token(item);
+                insert_token(item.id, item.name);
             });
         }
     }
@@ -363,7 +363,7 @@ $.TokenList = function (input, settings) {
         // Save this token id
         var id_string = id + ","
         hidden_input.val(hidden_input.val() + id_string);
-
+        
         token_count++;
         
         if(settings.tokenLimit != null && settings.tokenLimit >= token_count) {
