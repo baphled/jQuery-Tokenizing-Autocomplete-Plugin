@@ -16,6 +16,7 @@ $.fn.tokenInput = function (url, options) {
         hintText: "Type in a search term",
         noResultsText: "No results",
         searchingText: "Searching...",
+		createText: "Create",
         searchDelay: 300,
         allowNewValues: false,
         prePopulateFromInput: false,
@@ -87,7 +88,7 @@ $.TokenList = function (input, settings) {
     // Create a new text input an attach keyup events
     var input_box = $("<input type=\"text\">")
         .css({
-            outline: "none",
+            outline: "none"
         })
         .focus(function () {
             if (settings.tokenLimit == null || settings.tokenLimit != token_count) {
@@ -103,6 +104,7 @@ $.TokenList = function (input, settings) {
         .keydown(function (event) {
             var previous_token;
             var next_token;
+			//alert(event.keyCode);
 
             switch(event.keyCode) {
                 case KEY.LEFT:
@@ -166,9 +168,10 @@ $.TokenList = function (input, settings) {
                 case KEY.RETURN:
                 case KEY.COMMA:
                   if(selected_dropdown_item) {
-                    var li_data = $.data($(selected_dropdown_item).get(0), "tokeninput");
-                    add_token(li_data.id, li_data.name);
-                    return false;
+                    //var li_data = $.data($(selected_dropdown_item).get(0), "tokeninput");
+                    //add_token(li_data.id, li_data.name);
+					add_token($(selected_dropdown_item));
+					return false;
                   } else if(settings.allowNewValues) {
                 	create_new_token();
                 	return false;
@@ -186,6 +189,8 @@ $.TokenList = function (input, settings) {
                     }
                     break;
             }
+
+			return true;
         });
 
     // Keep a reference to the original input box
@@ -218,6 +223,7 @@ $.TokenList = function (input, settings) {
                     deselect_token($(selected_token), POSITION.END);
                 }
             }
+			return true;
         })
         .mouseover(function (event) {
             var li = get_element_from_event(event, "li");
@@ -237,6 +243,7 @@ $.TokenList = function (input, settings) {
             if(li){
                 return false;
             }
+			return true;
         });
 
 
@@ -341,9 +348,8 @@ $.TokenList = function (input, settings) {
 
     // Add a token to the token list based on user input
     function add_token (item) {
-        var li_data = $.data(item.get(0), "tokeninput");
-        
-        create_token(li_data);
+		var li_data = $.data(item.get(0), "tokeninput");
+		create_token(li_data);
     }
     
     function create_token (li_data) {
@@ -358,7 +364,7 @@ $.TokenList = function (input, settings) {
         hide_dropdown();
 
         // Save this token id
-        var id_string = id + ","
+        var id_string = li_data.id + ","
         hidden_input.val(hidden_input.val() + id_string);
         
         token_count++;
@@ -394,8 +400,23 @@ $.TokenList = function (input, settings) {
     }
     
     function create_new_token () {
+		return;
     	var string = input_box.val().toLowerCase();
-    	if(string.length > 0) add_token(string, string);
+		if(string.length > 0) {
+			//add_token(string, string);
+			var this_token = $("<li><p>"+string+"</p> </li>")
+					.addClass(settings.classes.token)
+					.insertBefore(input_token);
+
+                $("<span>x</span>")
+                    .addClass(settings.classes.tokenDelete)
+                    .appendTo(this_token)
+                    .click(function () {
+                        delete_token($(this).parent());
+                        return false;
+                    });
+			add_token(this_token);
+		}
     }
 
     // Select a token in the token list
@@ -512,9 +533,10 @@ $.TokenList = function (input, settings) {
                     select_dropdown_item(get_element_from_event(event, "li"));
                 })
                 .click(function (event) {
-                    var item = get_element_from_event(event, "li");
-                    var the_data = $.data(item.get(0), "tokeninput");
-                    add_token(the_data.id, the_data.name);
+                    //var item = get_element_from_event(event, "li");
+                    //var the_data = $.data(item.get(0), "tokeninput");
+                    //add_token(the_data.id, the_data.name);
+					add_token(get_element_from_event(event, "li"));
                 })
                 .mousedown(function (event) {
                     // Stop user selecting text on tokens
@@ -556,7 +578,7 @@ $.TokenList = function (input, settings) {
             
             // If canCreate option enabled, show "Create 'token-name'"
             if(settings.canCreate && !resultAdded[query]) {
-                var li = $("<li>Create '" + query + "'</li>")
+                var li = $("<li>" + settings.createText + " '" + query + "'</li>")
                             .appendTo(dropdown_ul);
                 // li.addClass(results.length%2 ? settings.classes.dropdownItem : settings.classes.dropdownItem2);
                 if(results.length % 2) {
