@@ -27,7 +27,8 @@
 			contentType: "json",
 			queryParam: "q",
 			onResult: null,
-			canCreate: false
+			canCreate: false,
+			allowDuplicates: false
 		}, options);
 
 		settings.classes = $.extend({
@@ -275,26 +276,25 @@
 			li_data = settings.prePopulate;
 			if(li_data && li_data.length) {
 				for(var i in li_data) {
-					var this_token = $("<li><p>"+li_data[i].name+"</p> </li>")
-					.addClass(settings.classes.token)
-					.insertBefore(input_token);
+					var this_token = $('<li><p id="' + li_data[i].id + '">' + li_data[i].name + '</p> </li>')
+						.addClass(settings.classes.token)
+						.insertBefore(input_token);
 
 					$("<span>x</span>")
-					.addClass(settings.classes.tokenDelete)
-					.appendTo(this_token)
-					.click(function () {
-						delete_token($(this).parent());
-						return false;
-					});
+						.addClass(settings.classes.tokenDelete)
+						.appendTo(this_token)
+						.click(function () {
+							delete_token($(this).parent());
+							return false;
+						});
 
 					$.data(this_token.get(0), "tokeninput", {
 						"id": li_data[i].id,
 						"name": li_data[i].name
-						});
+					});
 
 					// Clear input box and make sure it keeps focus
-					input_box
-					.val('');
+					input_box.val('');
 					//.focus();
 
 					// Don't show the help dropdown, they've got the idea
@@ -335,18 +335,18 @@
 
 		// Inner function to a token to the list
 		function insert_token(id, value) {
-			var this_token = $("<li><p>"+ value +"</p> </li>")
-			.addClass(settings.classes.token)
-			.insertBefore(input_token);
+			var this_token = $('<li><p id="' + id + '">' + value + '</p> </li>')
+				.addClass(settings.classes.token)
+				.insertBefore(input_token);
 
 			// The 'delete token' button
 			$("<span>x</span>")
-			.addClass(settings.classes.tokenDelete)
-			.appendTo(this_token)
-			.click(function () {
-				delete_token($(this).parent());
-				return false;
-			});
+				.addClass(settings.classes.tokenDelete)
+				.appendTo(this_token)
+				.click(function () {
+					delete_token($(this).parent());
+					return false;
+				});
 
 			$.data(this_token.get(0), "tokeninput", {
 				"id": id,
@@ -367,15 +367,22 @@
 
 			// Clear input box and make sure it keeps focus
 			input_box
-			.val("")
-			.focus();
+				.val("")
+				.focus();
 
 			// Don't show the help dropdown, they've got the idea
 			hide_dropdown();
 
 			// Save this token id
-			var id_string = li_data.id + ","
-			hidden_input.val(hidden_input.val() + id_string);
+			//var id_string = li_data.id + ","
+			//hidden_input.val(hidden_input.val() + id_string);
+
+			// save ids in order they appear in the list
+			var ids = '';
+			jQuery('li p', token_list).each(function() {
+				ids += jQuery(this).attr('id') + ',';
+			});
+			hidden_input.val(ids);
         
 			token_count++;
         
@@ -406,7 +413,7 @@
         
 			hidden_input.val(
 				hidden_input.val().replace(old_id_string, new_id_string)
-				);
+			);
 		}
     
 		function create_new_token () {
@@ -414,17 +421,17 @@
 			var string = input_box.val().toLowerCase();
 			if(string.length > 0) {
 				//add_token(string, string);
-				var this_token = $("<li><p>"+string+"</p> </li>")
-				.addClass(settings.classes.token)
-				.insertBefore(input_token);
+				var this_token = $('<li><p id="' + string + '">' + string + '</p> </li>')
+					.addClass(settings.classes.token)
+					.insertBefore(input_token);
 
 				$("<span>x</span>")
-				.addClass(settings.classes.tokenDelete)
-				.appendTo(this_token)
-				.click(function () {
-					delete_token($(this).parent());
-					return false;
-				});
+					.addClass(settings.classes.tokenDelete)
+					.appendTo(this_token)
+					.click(function () {
+						delete_token($(this).parent());
+						return false;
+					});
 				add_token(this_token);
 			}
 		}
@@ -483,7 +490,7 @@
 			input_box.focus();
 
 			// Delete this token's id from hidden input
-			var str = hidden_input.val()
+			/*var str = hidden_input.val()
 			var start = str.indexOf(token_data.id+",");
 			var end = str.indexOf(",", start) + 1;
 
@@ -491,15 +498,21 @@
 				hidden_input.val(str.slice(0, start));
 			} else {
 				hidden_input.val(str.slice(0, start) + str.slice(end, str.length));
-			}
+			}*/
+			// save ids in order they appear in the list
+			var ids = '';
+			jQuery('li p', token_list).each(function() {
+				ids += jQuery(this).attr('id') + ',';
+			});
+			hidden_input.val(ids);
         
 			token_count--;
         
 			if (settings.tokenLimit != null) {
 				input_box
-				.show()
-				.val("")
-				.focus();
+					.show()
+					.val("")
+					.focus();
 			}
 
 			$(hidden_input).trigger('tokendelete', {
@@ -530,7 +543,7 @@
 
 		// Highlight the query part of the search term
 		function highlight_term(value, term) {
-			return value.replace(new RegExp("(?![^&;]+;)(?!<[^<>]*)(" + term + ")(?![^<>]*>)(?![^&;]+;)", "gi"), "<b>$1</b>");
+			return value.replace(new RegExp("(?![^&;]+;)(?!<[^<>]*)(" + escape(term) + ")(?![^<>]*>)(?![^&;]+;)", "gi"), "<b>$1</b>");
 		}
 
 		// Populate the results dropdown with some results
@@ -556,12 +569,12 @@
 
 				// Check for duplicates
 				var resultAdded = new Array();
-				$("." + settings.classes.token, token_list)
-				.each(function(i, val) {
-					var data = $.data(val, "tokeninput");
-					resultAdded[data.name] = 1;
+				if (!settings.allowDuplicates) {
+					$("." + settings.classes.token, token_list).each(function(i, val) {
+						var data = $.data(val, "tokeninput");
+						resultAdded[data.name] = 1;
+					});
 				}
-				);
             
 				// Save the first li for selecting
 				var firstLi;
