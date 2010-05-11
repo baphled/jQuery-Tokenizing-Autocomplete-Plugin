@@ -19,7 +19,7 @@
 			createText: "Create",
 			searchDelay: 300,
 			allowNewValues: false,
-			prePopulateFromInput: false,
+			prePopulate: false,
 			minChars: 1,
 			tokenLimit: null,
 			jsonContainer: null,
@@ -271,42 +271,16 @@
 		//
 
 
-		// Pre-populate list if items exist
-		function init_list () {
-			li_data = settings.prePopulate;
-			if(li_data && li_data.length) {
-				for(var i in li_data) {
-					var this_token = $('<li><p id="' + li_data[i].id + '">' + li_data[i].name + '</p> </li>')
-						.addClass(settings.classes.token)
-						.insertBefore(input_token);
-
-					$("<span>x</span>")
-						.addClass(settings.classes.tokenDelete)
-						.appendTo(this_token)
-						.click(function () {
-							delete_token($(this).parent());
-							return false;
-						});
-
-					$.data(this_token.get(0), "tokeninput", {
-						"id": li_data[i].id,
-						"name": li_data[i].name
-					});
-
-					// Clear input box and make sure it keeps focus
-					input_box.val('');
-					//.focus();
-
-					// Don't show the help dropdown, they've got the idea
-					hide_dropdown();
-
-					// Save this token id
-					var id_string = li_data[i].id + ","
-					hidden_input.val(hidden_input.val() + id_string);
-				}
-			}
-		}
-
+    // Pre-populate list if items exist
+    function init_list () {
+      li_data = settings.prePopulate;
+      if(li_data && li_data.length) {
+        $.each(li_data, function(i, data) {
+          create_token(data);
+        });
+      }
+    }
+  
 		function is_printable_character(keycode) {
 			if((keycode >= 48 && keycode <= 90) ||      // 0-1a-z
 				(keycode >= 96 && keycode <= 111) ||     // numpad 0-9 + - / * .
