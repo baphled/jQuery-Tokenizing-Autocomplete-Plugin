@@ -548,7 +548,7 @@
 
 		// Populate the results dropdown with some results
 		function populate_dropdown (query, results) {
-			if(results.length || settings.canCreate) {
+			if(results && results.length || settings.canCreate) {
 				dropdown.empty();
 				var dropdown_ul = $("<ul>")
 				.appendTo(dropdown)
