@@ -279,6 +279,18 @@
           create_token(data);
         });
       }
+      // in case it is 'true' we take values from the input instead
+      else if(li_data == true) {
+        var values = hidden_input.val().split(',');
+
+        $j.each(values, function() {
+          var value = $j.trim(this);
+          if(value.length > 0) create_token({id: value, name: value});
+        });
+      } else {
+      }
+      
+        hidden_input.val('');
     }
   
 		function is_printable_character(keycode) {
