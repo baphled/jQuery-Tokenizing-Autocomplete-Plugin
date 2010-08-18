@@ -555,7 +555,8 @@
 
 				for(var i in results) {
 					if (results.hasOwnProperty(i) && !resultAdded[results[i].name]) {
-						var this_li = $j("<li>"+highlight_term(results[i].name, query)+"</li>")
+            var this_li = $j("<li>"+highlight_term(results[i].name, query)+ " " +
+            highlight_term(results[i].info || "", query) +"</li>")
 						.appendTo(dropdown_ul);
 
 						if(i%2) {
